@@ -6,6 +6,7 @@
   "scripts": {
     "deploy": "sls deploy",
     "remove": "sls remove",
+    "create": "sls create --template aws-nodejs --path",
     "test": "sls invoke local --function"
   },
   "author": "Nataliia Shyriaieva",

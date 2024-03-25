@@ -66,6 +66,12 @@ functions:
       - httpApi:
           path: /products
           method: get
+  getProductById:
+    handler: handler.getProductById
+    events:
+      - httpApi:
+          path: /products/{id}
+          method: get
 
 #    events:
 #      - httpApi:
