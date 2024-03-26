@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports.getProductsList = async (event) => {
-	const products = require('./mocks/products.json');
+	const products = require('./data/products.json');
 
 	return {
 		statusCode: 200,
@@ -10,7 +10,7 @@ module.exports.getProductsList = async (event) => {
 };
 
 module.exports.getProductById = async (event) => {
-	const products = require('./mocks/products.json');
+	const products = require('./data/products.json');
 	const { id } = event.pathParameters;
 	const product = products.find((product) => product.id === id);
 

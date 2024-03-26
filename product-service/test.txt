@@ -1,1 +1,0 @@
-    "test": "sls invoke local --fuction getProductById --path mocks/get-product-by-id-event.json"
