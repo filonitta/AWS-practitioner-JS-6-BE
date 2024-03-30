@@ -5,3 +5,5 @@
 `sls remove`
 
 `sls invoke local --function <function_name>`
+
+`sls invoke local --function <function_name> --path mock.json`

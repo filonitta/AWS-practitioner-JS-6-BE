@@ -1,16 +1,13 @@
-'use strict';
+import products from './data/products.json';
 
-module.exports.getProductsList = async (event) => {
-	const products = require('./data/products.json');
-
+export const getProductsList = async () => {
 	return {
 		statusCode: 200,
 		body: JSON.stringify(products),
 	};
 };
 
-module.exports.getProductById = async (event) => {
-	const products = require('./data/products.json');
+export const getProductById = async (event) => {
 	const { id } = event.pathParameters;
 	const product = products.find((product) => product.id === id);
 
