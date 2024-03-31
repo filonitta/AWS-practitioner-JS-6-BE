@@ -13,6 +13,9 @@ provider:
   runtime: nodejs18.x
   stage: dev
   region: us-east-2
+  environment:
+    PRODUCTS_TABLE_NAME: products
+    STOCK_TABLE_NAME: stock
   httpApi:
     cors: true
   iamRoleStatements:

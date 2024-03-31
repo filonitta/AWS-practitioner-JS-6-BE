@@ -1,5 +1,6 @@
 import { DynamoDB } from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
+import Joi from 'joi';
 
 const dynamoDB = new DynamoDB.DocumentClient();
 
@@ -7,6 +8,7 @@ const schema = Joi.object({
 	title: Joi.string().required(),
 	description: Joi.string().allow(''),
 	price: Joi.number().integer().required(),
+	image: Joi.string(),
 }).required();
 
 export const createProduct = async (event) => {
@@ -24,7 +26,7 @@ export const createProduct = async (event) => {
 	}
 
 	const params = {
-		TableName: 'products',
+		TableName: process.env.PRODUCTS_TABLE_NAME,
 		Item: {
 			id: uuidv4(),
 			title,
