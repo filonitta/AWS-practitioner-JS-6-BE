@@ -5,8 +5,6 @@ const dynamoDB = new DynamoDB.DocumentClient();
 export const deleteProduct = async (event) => {
 	const { id } = event.pathParameters;
 
-	console.log('id', id);
-
 	const params = {
 		TableName: 'products',
 		Key: {

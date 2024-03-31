@@ -44,7 +44,7 @@ export const createProduct = async (event) => {
 			body: JSON.stringify(params.Item),
 		};
 	} catch (error) {
-		console.log(`Error inserting into products table: ${error}`);
+		console.error(`Error inserting into products table: ${error}`);
 		return {
 			statusCode: 500,
 			body: JSON.stringify({ error: `Could not create product: ${error.message}` }),
