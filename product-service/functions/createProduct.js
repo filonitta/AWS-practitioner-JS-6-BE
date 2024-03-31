@@ -3,17 +3,23 @@ import { v4 as uuidv4 } from 'uuid';
 
 const dynamoDB = new DynamoDB.DocumentClient();
 
+const schema = Joi.object({
+	title: Joi.string().required(),
+	description: Joi.string().allow(''),
+	price: Joi.number().integer().required(),
+}).required();
+
 export const createProduct = async (event) => {
 	const parsedBody = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
 
 	const { title, description, image, price } = parsedBody;
 
-	if (!title) {
+	const { error } = schema.validate(parsedBody);
+
+	if (error) {
 		return {
 			statusCode: 400,
-			body: JSON.stringify({
-				error: 'Invalid product data. Title must be provided and not null.',
-			}),
+			body: JSON.stringify({ error: error.details[0].message }),
 		};
 	}
 
