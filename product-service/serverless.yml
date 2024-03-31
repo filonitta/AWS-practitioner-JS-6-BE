@@ -15,7 +15,7 @@ provider:
   region: us-east-2
   environment:
     PRODUCTS_TABLE_NAME: products
-    STOCK_TABLE_NAME: stock
+    STOCKS_TABLE_NAME: stocks
   httpApi:
     cors: true
   iamRoleStatements:
@@ -24,7 +24,7 @@ provider:
         - "dynamodb:*"
       Resource:
         - "arn:aws:dynamodb:${self:provider.region}:${self:custom.accountId}:table/products"
-        - "arn:aws:dynamodb:${self:provider.region}:${self:custom.accountId}:table/stock"
+        - "arn:aws:dynamodb:${self:provider.region}:${self:custom.accountId}:table/stocks"
 
 functions:
   getProductsList:
@@ -51,8 +51,8 @@ functions:
       - httpApi:
           path: /products/{id}
           method: delete
-  loadProducts:
-    handler: handler.loadProducts
+  loadData:
+    handler: handler.loadData
     events:
       - http:
           path: products/load
@@ -63,7 +63,7 @@ resources:
     ProductsTable:
       Type: 'AWS::DynamoDB::Table'
       Properties:
-        TableName: products
+        TableName: ${self:provider.environment.PRODUCTS_TABLE_NAME}
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
@@ -73,4 +73,16 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
-
+    StocksTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: ${self:provider.environment.STOCKS_TABLE_NAME}
+        AttributeDefinitions:
+          - AttributeName: product_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: product_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
