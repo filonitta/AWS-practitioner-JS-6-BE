@@ -6,7 +6,16 @@ const dynamoDB = new DynamoDB.DocumentClient();
 export const createProduct = async (event) => {
 	const parsedBody = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
 
-	const { title, description, image, price, count } = parsedBody;
+	const { title, description, image, price } = parsedBody;
+
+	if (!title) {
+		return {
+			statusCode: 400,
+			body: JSON.stringify({
+				error: 'Invalid product data. Title must be provided and not null.',
+			}),
+		};
+	}
 
 	const params = {
 		TableName: 'products',
@@ -16,7 +25,6 @@ export const createProduct = async (event) => {
 			description,
 			image,
 			price,
-			count,
 		},
 	};
 
