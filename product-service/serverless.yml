@@ -42,7 +42,7 @@ functions:
   createProduct:
     handler: handler.createProduct
     events:
-      - http:
+      - httpApi:
           path: /create
           method: post
   deleteProduct:
@@ -54,8 +54,8 @@ functions:
   loadData:
     handler: handler.loadData
     events:
-      - http:
-          path: products/load
+      - httpApi:
+          path: /products/load
           method: post
 
 resources:

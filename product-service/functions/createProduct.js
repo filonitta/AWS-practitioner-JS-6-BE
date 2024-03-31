@@ -37,8 +37,8 @@ export const createProduct = async (event) => {
 	};
 
 	try {
-		const data = await dynamoDB.put(params).promise();
-		console.log('Data: ', data);
+		await dynamoDB.put(params).promise();
+
 		return {
 			statusCode: 200,
 			body: JSON.stringify(params.Item),

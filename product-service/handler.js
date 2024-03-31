@@ -2,4 +2,5 @@ export { getProductsList } from './functions/getProductsList';
 export { getProductById } from './functions/getProductById';
 export { createProduct } from './functions/createProduct';
 export { deleteProduct } from './functions/deleteProduct';
-export { loadProducts } from './functions/loadProducts';
+export { loadProducts, loadStocks } from './functions/loadProducts';
+export { loadData } from './functions/loadData';
