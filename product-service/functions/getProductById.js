@@ -5,26 +5,39 @@ const dynamoDB = new DynamoDB.DocumentClient();
 export const getProductById = async (event) => {
 	const { id } = event.pathParameters;
 
-	const params = {
+	const productParams = {
 		TableName: process.env.PRODUCTS_TABLE_NAME,
 		Key: {
 			id: id,
 		},
 	};
 
-	try {
-		const data = await dynamoDB.get(params).promise();
+	const stockParams = {
+		TableName: process.env.STOCKS_TABLE_NAME,
+		Key: {
+			product_id: id,
+		},
+	};
 
-		if (!data.Item) {
+	try {
+		const productData = await dynamoDB.get(productParams).promise();
+		const stockData = await dynamoDB.get(stockParams).promise();
+
+		if (!productData.Item || !stockData.Item) {
 			return {
 				statusCode: 404,
 				body: JSON.stringify({ message: 'Product not found' }),
 			};
 		}
 
+		const resultData = {
+			...productData.Item,
+			count: stockData.Item.count,
+		};
+
 		return {
 			statusCode: 200,
-			body: JSON.stringify(data.Item),
+			body: JSON.stringify(resultData),
 		};
 	} catch (error) {
 		console.error(`Error retrieving product from DynamoDB: ${error}`);

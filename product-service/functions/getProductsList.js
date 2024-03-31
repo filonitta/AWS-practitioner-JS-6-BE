@@ -9,9 +9,29 @@ export const getProductsList = async () => {
 
 	try {
 		const data = await dynamoDB.scan(params).promise();
+		const productData = data.Items;
+
+		const fullProductData = await Promise.all(
+			productData.map(async (product) => {
+				const stockParams = {
+					TableName: process.env.STOCKS_TABLE_NAME,
+					Key: {
+						product_id: product.id,
+					},
+				};
+
+				const stockData = await dynamoDB.get(stockParams).promise();
+
+				return {
+					...product,
+					count: stockData.Item ? stockData.Item.count : 0,
+				};
+			})
+		);
+
 		return {
 			statusCode: 200,
-			body: JSON.stringify(data.Items),
+			body: JSON.stringify(fullProductData),
 		};
 	} catch (error) {
 		console.error(`Error retrieving products from DynamoDB: ${error}`);

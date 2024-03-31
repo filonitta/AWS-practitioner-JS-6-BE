@@ -5,15 +5,26 @@ const dynamoDB = new DynamoDB.DocumentClient();
 export const deleteProduct = async (event) => {
 	const { id } = event.pathParameters;
 
-	const params = {
-		TableName: 'products',
+	const productParams = {
+		TableName: process.env.PRODUCTS_TABLE_NAME,
 		Key: {
 			id,
 		},
 	};
 
+	const stocksParams = {
+		TableName: process.env.STOCKS_TABLE_NAME,
+		Key: {
+			product_id: id,
+		},
+	};
+
 	try {
-		await dynamoDB.delete(params).promise();
+		await Promise.all([
+			dynamoDB.delete(productParams).promise(),
+			dynamoDB.delete(stocksParams).promise(),
+		]);
+
 		return {
 			statusCode: 200,
 			body: JSON.stringify({ message: `Product with id: ${id} deleted` }),
