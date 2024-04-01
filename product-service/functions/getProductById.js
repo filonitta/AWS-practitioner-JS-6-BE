@@ -3,6 +3,8 @@ import { DynamoDB } from 'aws-sdk';
 const dynamoDB = new DynamoDB.DocumentClient();
 
 export const getProductById = async (event) => {
+	console.log('Event pathParameters', event.pathParameters);
+
 	const { id } = event.pathParameters;
 
 	const productParams = {

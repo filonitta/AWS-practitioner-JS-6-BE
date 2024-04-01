@@ -12,6 +12,8 @@ const schema = Joi.object({
 }).required();
 
 export const createProduct = async (event) => {
+	console.log('Request body', event.body);
+
 	const parsedBody = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
 
 	const { title, description, image, price } = parsedBody;
