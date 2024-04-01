@@ -3,7 +3,7 @@ import { DynamoDB } from 'aws-sdk';
 const dynamoDB = new DynamoDB.DocumentClient();
 
 export const deleteProduct = async (event) => {
-	console.log('Event pathParameters', event.pathParameters);
+	console.info('Event pathParameters', event.pathParameters);
 
 	const { id } = event.pathParameters;
 
