@@ -9,6 +9,7 @@ export const getProductsList = async () => {
 
 	try {
 		const data = await dynamoDB.scan(params).promise();
+
 		const productData = data.Items;
 
 		const fullProductData = await Promise.all(
