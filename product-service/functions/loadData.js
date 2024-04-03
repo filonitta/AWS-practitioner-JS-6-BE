@@ -18,28 +18,9 @@ const stockSchema = Joi.object({
 
 const combinedSchema = productSchema.concat(stockSchema).required();
 
-export const loadData = async (event) => {
+export const loadData = async () => {
 	for (const product of products) {
 		const { title, description, image, price, count } = product;
-
-		const productParams = {
-			TableName: process.env.PRODUCTS_TABLE_NAME,
-			Item: {
-				id: uuidv4(),
-				title,
-				description,
-				image,
-				price,
-			},
-		};
-
-		const stockParams = {
-			TableName: process.env.STOCKS_TABLE_NAME,
-			Item: {
-				product_id: productParams.Item.id,
-				count,
-			},
-		};
 
 		const { error } = combinedSchema.validate(product);
 
@@ -50,15 +31,38 @@ export const loadData = async (event) => {
 			};
 		}
 
-		try {
-			const requests = [
-				dynamoDB.put(productParams).promise(),
-				dynamoDB.put(stockParams).promise(),
-			];
+		const id = uuidv4();
 
-			await Promise.all(requests);
+		const productParams = {
+			TransactItems: [
+				{
+					Put: {
+						TableName: process.env.PRODUCTS_TABLE_NAME,
+						Item: {
+							id,
+							title,
+							description,
+							image,
+							price,
+						},
+					},
+				},
+				{
+					Put: {
+						TableName: process.env.STOCKS_TABLE_NAME,
+						Item: {
+							product_id: id,
+							count,
+						},
+					},
+				},
+			],
+		};
+
+		try {
+			await dynamoDB.transactWrite(productParams).promise();
 		} catch (error) {
-			console.error(`Error inserting into products table: ${error}`);
+			console.error(`Error inserting into products & stocks tables: ${error}`);
 			return {
 				statusCode: 500,
 				body: JSON.stringify({ error: `Could not create product: ${error.message}` }),
