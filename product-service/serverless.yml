@@ -1,0 +1,88 @@
+service: product-service
+
+frameworkVersion: "3"
+
+plugins:
+  - serverless-webpack
+
+custom:
+  accountId: 449436809015
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: dev
+  region: us-east-2
+  environment:
+    PRODUCTS_TABLE_NAME: products
+    STOCKS_TABLE_NAME: stocks
+  httpApi:
+    cors: true
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:*"
+      Resource:
+        - "arn:aws:dynamodb:${self:provider.region}:${self:custom.accountId}:table/products"
+        - "arn:aws:dynamodb:${self:provider.region}:${self:custom.accountId}:table/stocks"
+
+functions:
+  getProductsList:
+    handler: handler.getProductsList
+    events:
+      - httpApi:
+          path: /products
+          method: get
+  getProductById:
+    handler: handler.getProductById
+    events:
+      - httpApi:
+          path: /products/{id}
+          method: get
+  createProduct:
+    handler: handler.createProduct
+    events:
+      - httpApi:
+          path: /create
+          method: post
+  deleteProduct:
+    handler: handler.deleteProduct
+    events:
+      - httpApi:
+          path: /products/{id}
+          method: delete
+  loadData:
+    handler: handler.loadData
+    events:
+      - httpApi:
+          path: /products/load
+          method: post
+
+resources:
+  Resources:
+    ProductsTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: ${self:provider.environment.PRODUCTS_TABLE_NAME}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+    StocksTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: ${self:provider.environment.STOCKS_TABLE_NAME}
+        AttributeDefinitions:
+          - AttributeName: product_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: product_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
