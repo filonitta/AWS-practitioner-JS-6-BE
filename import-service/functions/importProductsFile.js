@@ -1,6 +1,6 @@
 import AWS from 'aws-sdk';
 
-const s3 = new AWS.S3({ region: process.env.AWS_REGION, signatureVersion: 'v4' });
+const s3 = new AWS.S3({ region: process.env.REGION, signatureVersion: 'v4' });
 
 export const importProductsFile = async (event) => {
 	console.info('queryStringParameters', event.queryStringParameters);

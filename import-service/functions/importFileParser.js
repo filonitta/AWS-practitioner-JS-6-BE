@@ -1,7 +1,7 @@
 import AWS from 'aws-sdk';
 import csv from 'csv-parser';
 
-const s3 = new AWS.S3({ region: process.env.AWS_REGION });
+const s3 = new AWS.S3({ region: process.env.REGION });
 
 export const importFileParser = async (event) => {
 	for (const record of event.Records) {

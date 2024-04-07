@@ -14,7 +14,7 @@ provider:
   environment:
     UPLOAD_FOLDER: uploaded
     BUCKET: ${self:custom.bucketName}
-    AWS_REGION: ${self:provider.region}
+    REGION: ${self:provider.region}
   httpApi:
     cors: true
   iamRoleStatements:
@@ -30,14 +30,13 @@ provider:
 functions:
   importProductsFile:
     handler: handler.importProductsFile
+    description: |
+      This function requires a query string parameter "name" specifying the filename.
+      Example usage: /import?name=myFile.csv
     events:
       - httpApi:
           path: /import
           method: get
-          request:
-            parameters:
-              querystrings:
-                name: true
   importFileParser:
     handler: handler.importFileParser
     events:
