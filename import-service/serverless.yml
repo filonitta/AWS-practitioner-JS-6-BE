@@ -16,6 +16,7 @@ provider:
   region: us-east-2
   environment:
     UPLOAD_FOLDER: uploaded
+    PARSE_FOLDER: parsed
     BUCKET: ${self:custom.bucketName}
     REGION: ${self:provider.region}
   httpApi:
@@ -26,6 +27,7 @@ provider:
         - 's3:ListBucket'
         - 's3:GetObject'
         - 's3:PutObject'
+        - 's3:DeleteObject'
       Resource:
         - 'arn:aws:s3:::${self:custom.bucketName}'
         - 'arn:aws:s3:::${self:custom.bucketName}/*'
