@@ -2,6 +2,9 @@ service: import-service
 
 frameworkVersion: "3"
 
+plugins:
+  - serverless-webpack
+
 custom:
   accountId: 449436809015
   bucketName: import-service-files
