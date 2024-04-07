@@ -17,17 +17,20 @@ export const importProductsFile = async (event) => {
 	try {
 		const signedUrl = await s3.getSignedUrlPromise('putObject', params);
 
+		const headers = {
+			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Credentials': true,
+		};
+
 		return {
 			statusCode: 200,
+			headers,
 			body: JSON.stringify(signedUrl),
-			// headers: {
-			// 	'Access-Control-Allow-Origin': '*',
-			// 	'Access-Control-Allow-Credentials': true,
-			// },
 		};
 	} catch (error) {
 		return {
 			statusCode: 500,
+			headers,
 			body: 'Failed to generate signed URL',
 		};
 	}
