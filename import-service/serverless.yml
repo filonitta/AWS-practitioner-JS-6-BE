@@ -1,0 +1,28 @@
+service: import-service
+
+frameworkVersion: "3"
+
+custom:
+  accountId: 449436809015
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: dev
+  region: us-east-2
+  environment:
+    UPLOAD_FOLDER: uploads
+  httpApi:
+    cors: true
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:*"
+      Resource:
+        - "arn:aws:dynamodb:${self:provider.region}:${self:custom.accountId}:table/products"
+        - "arn:aws:dynamodb:${self:provider.region}:${self:custom.accountId}:table/stocks"
+
+
+functions:
+  hello:
+    handler: handler.hello
