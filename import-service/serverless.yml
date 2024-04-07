@@ -4,6 +4,7 @@ frameworkVersion: "3"
 
 custom:
   accountId: 449436809015
+  bucketName: import-service-files
 
 provider:
   name: aws
@@ -11,18 +12,29 @@ provider:
   stage: dev
   region: us-east-2
   environment:
-    UPLOAD_FOLDER: uploads
+    UPLOAD_FOLDER: uploaded
+    BUCKET: ${self:custom.bucketName}
+    AWS_REGION: ${self:provider.region}
   httpApi:
     cors: true
   iamRoleStatements:
-    - Effect: "Allow"
+    - Effect: 'Allow'
       Action:
-        - "dynamodb:*"
+        - 's3:ListBucket'
+        - 's3:GetObject'
+        - 's3:PutObject'
       Resource:
-        - "arn:aws:dynamodb:${self:provider.region}:${self:custom.accountId}:table/products"
-        - "arn:aws:dynamodb:${self:provider.region}:${self:custom.accountId}:table/stocks"
-
+        - 'arn:aws:s3:::${self:custom.bucketName}'
+        - 'arn:aws:s3:::${self:custom.bucketName}/*'
 
 functions:
-  hello:
-    handler: handler.hello
+  importProductsFile:
+    handler: handler.importProductsFile
+    events:
+      - httpApi:
+          path: /import
+          method: get
+          request:
+            parameters:
+              querystrings:
+                name: true
