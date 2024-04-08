@@ -29,8 +29,10 @@ describe('createProduct', () => {
 		mDynamoDB = new DynamoDB.DocumentClient();
 		process.env.PRODUCTS_TABLE_NAME = 'mockProductsTable';
 	});
+
 	afterEach(() => {
 		jest.clearAllMocks();
+		delete process.env.PRODUCTS_TABLE_NAME;
 	});
 
 	it('should return 200 when the product is successfully created', async () => {
