@@ -16,15 +16,20 @@ provider:
   environment:
     PRODUCTS_TABLE_NAME: products
     STOCKS_TABLE_NAME: stocks
+    EMAIL: Nataliia_Shyriaieva@epam.com
   httpApi:
     cors: true
   iamRoleStatements:
     - Effect: "Allow"
       Action:
         - "dynamodb:*"
+        - 'sqs:ReceiveMessage'
+        - 'sqs:DeleteMessage'
+        - 'sqs:GetQueueAttributes'
       Resource:
-        - "arn:aws:dynamodb:${self:provider.region}:${self:custom.accountId}:table/products"
-        - "arn:aws:dynamodb:${self:provider.region}:${self:custom.accountId}:table/stocks"
+        - { 'Fn::GetAtt': ['ProductsTable', 'Arn'] }
+        - { 'Fn::GetAtt': ['StocksTable', 'Arn'] }
+        - { 'Fn::GetAtt': ['catalogItemsQueue', 'Arn'] }
 
 functions:
   getProductsList:
@@ -57,6 +62,18 @@ functions:
       - httpApi:
           path: /products/load
           method: post
+  catalogBatchProcess:
+    handler: handler.catalogBatchProcess
+    environment:
+      SNS_TOPIC_ARN:
+        Ref: createProductTopic
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - catalogItemsQueue
+              - Arn
+          batchSize: 5
 
 resources:
   Resources:
@@ -86,3 +103,18 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
+    catalogItemsQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: catalogItemsQueue
+    createProductTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: createProductTopic
+    createProductTopicSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Endpoint: ${self:provider.environment.EMAIL}
+        Protocol: email
+        TopicArn:
+          Ref: createProductTopic

@@ -11,21 +11,9 @@ const schema = Joi.object({
 	image: Joi.string(),
 }).required();
 
-export const createProduct = async (event) => {
-	console.info('Request body', event.body);
-
-	const parsedBody = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
-
-	const { title, description, image, price } = parsedBody;
-
-	const { error } = schema.validate(parsedBody);
-
-	if (error) {
-		return {
-			statusCode: 400,
-			body: JSON.stringify({ error: error.details[0].message }),
-		};
-	}
+// validate and insert data into the database
+export const addProduct = async (productData) => {
+	const { title, description, image, price } = productData;
 
 	const params = {
 		TableName: process.env.PRODUCTS_TABLE_NAME,
@@ -38,12 +26,31 @@ export const createProduct = async (event) => {
 		},
 	};
 
+	await dynamoDB.put(params).promise();
+
+	return params.Item;
+};
+
+export const createProduct = async (event) => {
+	console.info('Request body', event.body);
+
+	const parsedBody = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
+
+	const { error } = schema.validate(parsedBody);
+
+	if (error) {
+		return {
+			statusCode: 400,
+			body: JSON.stringify({ error: error.details[0].message }),
+		};
+	}
+
 	try {
-		await dynamoDB.put(params).promise();
+		const createdProduct = await addProduct(parsedBody);
 
 		return {
 			statusCode: 200,
-			body: JSON.stringify(params.Item),
+			body: JSON.stringify(createdProduct),
 		};
 	} catch (error) {
 		console.error(`Error inserting into products table: ${error}`);
