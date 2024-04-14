@@ -19,6 +19,8 @@ provider:
     PARSE_FOLDER: parsed
     BUCKET: ${self:custom.bucketName}
     REGION: ${self:provider.region}
+    SQS_URL:
+      'Fn::ImportValue': 'product-service-${self:provider.stage}-CatalogItemsQueueUrl'
   httpApi:
     cors: true
   iamRoleStatements:
@@ -31,6 +33,11 @@ provider:
       Resource:
         - 'arn:aws:s3:::${self:custom.bucketName}'
         - 'arn:aws:s3:::${self:custom.bucketName}/*'
+    - Effect: 'Allow'
+      Action:
+        - 'sqs:SendMessage'
+      Resource:
+        - 'Fn::ImportValue': 'product-service-${self:provider.stage}-CatalogItemsQueueArn'
 
 functions:
   importProductsFile:

@@ -23,6 +23,7 @@ provider:
     - Effect: "Allow"
       Action:
         - "dynamodb:*"
+        - 'sns:Publish'
         - 'sqs:ReceiveMessage'
         - 'sqs:DeleteMessage'
         - 'sqs:GetQueueAttributes'
@@ -30,6 +31,7 @@ provider:
         - { 'Fn::GetAtt': ['ProductsTable', 'Arn'] }
         - { 'Fn::GetAtt': ['StocksTable', 'Arn'] }
         - { 'Fn::GetAtt': ['catalogItemsQueue', 'Arn'] }
+        - { 'Fn::Sub': 'arn:aws:sns:${self:provider.region}:${self:custom.accountId}:createProductTopic' }
 
 functions:
   getProductsList:
@@ -118,3 +120,20 @@ resources:
         Protocol: email
         TopicArn:
           Ref: createProductTopic
+  Outputs:
+    CatalogItemsQueueUrl:
+      Description: "URL of the catalog items SQS queue"
+      Value:
+        Ref: catalogItemsQueue
+      Export:
+        Name:
+          Fn::Sub: "${AWS::StackName}-CatalogItemsQueueUrl"
+    CatalogItemsQueueArn:
+      Description: "ARN of the catalog items SQS queue"
+      Value:
+        Fn::GetAtt:
+            - catalogItemsQueue
+            - Arn
+      Export:
+        Name:
+          Fn::Sub: "${AWS::StackName}-CatalogItemsQueueArn"

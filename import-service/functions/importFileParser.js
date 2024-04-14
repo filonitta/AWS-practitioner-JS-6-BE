@@ -2,10 +2,10 @@ import { S3, SQS } from 'aws-sdk';
 import csv from 'csv-parser';
 import { finished } from 'stream/promises';
 
-const s3 = new S3({ region: process.env.REGION });
-const sqs = new SQS();
-
 export const importFileParser = async (event) => {
+	const s3 = new S3({ region: process.env.REGION });
+	const sqs = new SQS();
+
 	for (const record of event.Records) {
 		const originalKey = decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '));
 		const parsedKey = originalKey.replace(process.env.UPLOAD_FOLDER, process.env.PARSE_FOLDER);
@@ -21,7 +21,7 @@ export const importFileParser = async (event) => {
 
 			await sqs
 				.sendMessage({
-					QueueUrl: process.env.SQS_QUEUE_URL,
+					QueueUrl: process.env.SQS_URL,
 					MessageBody: JSON.stringify(data),
 				})
 				.promise();
