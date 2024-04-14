@@ -6,16 +6,13 @@ export const catalogBatchProcess = async (event) => {
 
 	const records = event.Records;
 
-	console.info('records', records);
-
 	for (let record of records) {
 		const productData = JSON.parse(record.body);
 
 		try {
 			const createdProduct = await addProduct(productData);
 
-			const message = `Product was created:
-							${JSON.stringify(createdProduct, null, 2)}`;
+			const message = `Product was created:\n${JSON.stringify(createdProduct, null, 2)}`;
 
 			await sns
 				.publish({
