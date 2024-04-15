@@ -17,8 +17,6 @@ export const importFileParser = async (event) => {
 		const s3Stream = s3.getObject(params).createReadStream();
 
 		s3Stream.pipe(csv()).on('data', async (data) => {
-			console.info(data);
-
 			await sqs
 				.sendMessage({
 					QueueUrl: process.env.SQS_URL,
