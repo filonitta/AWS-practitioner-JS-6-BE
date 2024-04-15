@@ -23,6 +23,10 @@ export const catalogBatchProcess = async (event) => {
 							DataType: 'String',
 							StringValue: 'ProductCreated',
 						},
+						price: {
+							DataType: 'Number',
+							StringValue: createdProduct.price.toString(),
+						},
 					},
 					TopicArn: process.env.SNS_TOPIC_ARN,
 				})

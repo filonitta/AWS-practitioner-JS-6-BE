@@ -17,6 +17,7 @@ provider:
     PRODUCTS_TABLE_NAME: products
     STOCKS_TABLE_NAME: stocks
     EMAIL: Nataliia_Shyriaieva@epam.com
+    EMAIL_EXTRA: Nataliia.Shyriaieva@medecision.com
   httpApi:
     cors: true
   iamRoleStatements:
@@ -120,6 +121,16 @@ resources:
         Protocol: email
         TopicArn:
           Ref: createProductTopic
+    createProductTopicSubscriptionExtra:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Endpoint: ${self:provider.environment.EMAIL_EXTRA}
+        Protocol: email
+        TopicArn:
+          Ref: createProductTopic
+        FilterPolicy:
+          price:
+            - 10
   Outputs:
     CatalogItemsQueueUrl:
       Description: "URL of the catalog items SQS queue"
