@@ -4,39 +4,67 @@ import Joi from 'joi';
 
 const dynamoDB = new DynamoDB.DocumentClient();
 
-const schema = Joi.object({
+const productSchema = Joi.object({
 	title: Joi.string().required(),
 	description: Joi.string().allow(''),
 	price: Joi.number().integer().required(),
 	image: Joi.string(),
 }).required();
 
+const stockSchema = Joi.object({
+	count: Joi.number().integer().min(0).required(),
+}).required();
+
+const combinedSchema = productSchema.concat(stockSchema).required();
+
 // validate and insert data into the database
 export const addProduct = async (productData) => {
-	const { title, description, image, price } = productData;
+	const { title, description, image, price, count } = productData;
 
-	const params = {
-		TableName: process.env.PRODUCTS_TABLE_NAME,
-		Item: {
-			id: uuidv4(),
-			title,
-			description,
-			image,
-			price,
-		},
+	const id = uuidv4();
+
+	const productParams = {
+		TransactItems: [
+			{
+				Put: {
+					TableName: process.env.PRODUCTS_TABLE_NAME,
+					Item: {
+						id,
+						title,
+						description,
+						image,
+						price,
+					},
+				},
+			},
+			{
+				Put: {
+					TableName: process.env.STOCKS_TABLE_NAME,
+					Item: {
+						product_id: id,
+						count,
+					},
+				},
+			},
+		],
 	};
 
-	await dynamoDB.put(params).promise();
-
-	return params.Item;
+	try {
+		await dynamoDB.transactWrite(productParams).promise();
+		return params.Item;
+	} catch (error) {
+		console.error(`Error inserting into products & stocks tables: ${error}`);
+		return {
+			statusCode: 500,
+			body: JSON.stringify({ error: `Could not create product: ${error.message}` }),
+		};
+	}
 };
 
 export const createProduct = async (event) => {
-	console.info('Request body', event.body);
-
 	const parsedBody = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
 
-	const { error } = schema.validate(parsedBody);
+	const { error } = combinedSchema.validate(parsedBody);
 
 	if (error) {
 		return {
