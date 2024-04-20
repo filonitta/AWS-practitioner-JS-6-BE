@@ -59,12 +59,6 @@ functions:
       - httpApi:
           path: /products/{id}
           method: delete
-  loadData:
-    handler: handler.loadData
-    events:
-      - httpApi:
-          path: /products/load
-          method: post
   catalogBatchProcess:
     handler: handler.catalogBatchProcess
     environment:
