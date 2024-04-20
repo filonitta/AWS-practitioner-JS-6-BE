@@ -1,74 +1,140 @@
-import { DynamoDB } from 'aws-sdk';
-import { createProduct } from './../createProduct';
-import { v4 as uuidv4 } from 'uuid';
+import { addProduct, createProduct } from './../createProduct';
+
+let mockPromise = jest.fn();
 
 jest.mock('aws-sdk', () => {
-	const mDynamoDB = {
-		put: jest.fn().mockReturnThis(),
-		promise: jest.fn(),
-	};
 	return {
 		DynamoDB: {
-			DocumentClient: jest.fn(() => mDynamoDB),
+			DocumentClient: jest.fn(() => ({
+				transactWrite: jest.fn(() => ({ promise: mockPromise })),
+			})),
 		},
 	};
 });
 
-jest.mock('uuid', () => ({
-	v4: jest.fn(),
-}));
+jest.mock('uuid', () => {
+	return {
+		v4: jest.fn().mockReturnValue('uniqueUUID'),
+	};
+});
 
-describe('createProduct', () => {
-	let mDynamoDB;
-
+describe('addProduct', () => {
 	beforeAll(() => {
-		jest.spyOn(console, 'info').mockReturnValue();
+		jest.spyOn(console, 'error').mockImplementation();
 	});
 
 	beforeEach(() => {
-		mDynamoDB = new DynamoDB.DocumentClient();
-		process.env.PRODUCTS_TABLE_NAME = 'mockProductsTable';
+		process.env.PRODUCTS_TABLE_NAME = 'Products';
+		process.env.STOCKS_TABLE_NAME = 'Stocks';
+		mockPromise.mockClear();
 	});
 
-	afterEach(() => {
-		jest.clearAllMocks();
-		delete process.env.PRODUCTS_TABLE_NAME;
+	it('should insert product data into the db and return the product', async () => {
+		mockPromise.mockResolvedValueOnce({});
+
+		const productData = {
+			title: 'Test Title',
+			description: 'Test Description',
+			image: 'Test Image',
+			price: 25,
+			count: 5,
+		};
+
+		const result = await addProduct(productData);
+
+		expect(result).toEqual({
+			id: 'uniqueUUID',
+			...productData,
+		});
 	});
 
-	it('should return 200 when the product is successfully created', async () => {
-		const id = '1';
-		uuidv4.mockReturnValueOnce(id);
+	it('should handle db error gracefully', async () => {
+		mockPromise.mockRejectedValueOnce(new Error('DB error'));
 
-		mDynamoDB.promise.mockResolvedValueOnce({});
+		const productData = {
+			title: 'Test Title',
+			description: 'Test Description',
+			image: 'Test Image',
+			price: 25,
+			count: 5,
+		};
 
+		try {
+			await addProduct(productData);
+		} catch (error) {
+			expect(error.message).toEqual('Could not create product: DB error');
+		}
+	});
+});
+
+describe('createProduct', () => {
+	beforeAll(() => {
+		jest.spyOn(console, 'error').mockImplementation();
+	});
+
+	it('should validate the input data and return an error for invalid data', async () => {
 		const event = {
 			body: JSON.stringify({
-				title: 'product',
-				price: 10,
+				title: 'Test Title',
+				description: 'Test Description',
+				image: 'Test Image',
+				price: '25abc',
+				count: 5,
 			}),
 		};
-		const response = await createProduct(event);
-		expect(response.statusCode).toBe(200);
-		const body = JSON.parse(response.body);
-		expect(body.id).toBe(id);
+
+		const result = await createProduct(event);
+
+		expect(result.statusCode).toBe(400);
+		expect(JSON.parse(result.body)).toEqual({
+			error: '"price" must be a number',
+		});
 	});
 
-	it('should return 500 when put operation fails', async () => {
-		jest.spyOn(console, 'error').mockReturnValueOnce();
-
-		const id = '1';
-		uuidv4.mockReturnValueOnce(id);
-		const error = new Error('error');
-		mDynamoDB.promise.mockRejectedValueOnce(error);
+	it('should create a product when the input data is valid', async () => {
 		const event = {
 			body: JSON.stringify({
-				title: 'product',
-				price: 10,
+				title: 'Test Title',
+				description: 'Test Description',
+				image: 'Test Image',
+				price: 25,
+				count: 5,
 			}),
 		};
-		const response = await createProduct(event);
-		expect(response.statusCode).toBe(500);
-		const body = JSON.parse(response.body);
-		expect(body.error).toBe(`Could not create product: ${error.message}`);
+
+		mockPromise.mockResolvedValueOnce({});
+
+		const result = await createProduct(event);
+
+		expect(result.statusCode).toBe(200);
+		expect(JSON.parse(result.body)).toEqual({
+			id: 'uniqueUUID',
+			title: 'Test Title',
+			description: 'Test Description',
+			image: 'Test Image',
+			price: 25,
+			count: 5,
+		});
+	});
+
+	it('should handle db error gracefully when creating a product', async () => {
+		const event = {
+			body: JSON.stringify({
+				title: 'Test Title',
+				description: 'Test Description',
+				image: 'Test Image',
+				price: 25,
+				count: 5,
+			}),
+		};
+
+		mockPromise.mockRejectedValueOnce(new Error('DB error'));
+
+		const result = await createProduct(event);
+
+		expect(JSON.parse(result.body)).toEqual({
+			statusCode: 500,
+			body: '{"error":"Could not create product: DB error"}',
+		});
 	});
 });
