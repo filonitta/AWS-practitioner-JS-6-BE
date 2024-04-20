@@ -12,7 +12,7 @@ const productSchema = Joi.object({
 }).required();
 
 const stockSchema = Joi.object({
-	count: Joi.number().integer().min(0).required(),
+	count: Joi.number().integer().required(),
 }).required();
 
 const combinedSchema = productSchema.concat(stockSchema).required();
@@ -22,19 +22,20 @@ export const addProduct = async (productData) => {
 	const { title, description, image, price, count } = productData;
 
 	const id = uuidv4();
+	const productItem = {
+		id,
+		title,
+		description,
+		image,
+		price,
+	};
 
 	const productParams = {
 		TransactItems: [
 			{
 				Put: {
 					TableName: process.env.PRODUCTS_TABLE_NAME,
-					Item: {
-						id,
-						title,
-						description,
-						image,
-						price,
-					},
+					Item: productItem,
 				},
 			},
 			{
@@ -51,7 +52,7 @@ export const addProduct = async (productData) => {
 
 	try {
 		await dynamoDB.transactWrite(productParams).promise();
-		return params.Item;
+		return { ...productItem, count };
 	} catch (error) {
 		console.error(`Error inserting into products & stocks tables: ${error}`);
 		return {
