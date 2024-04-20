@@ -1,5 +1,5 @@
 import { DynamoDB } from 'aws-sdk';
-import { deleteProduct } from './../deleteProduct';
+import { deleteProduct } from '../deleteProduct';
 
 jest.mock('aws-sdk', () => {
 	const mDynamoDB = {
