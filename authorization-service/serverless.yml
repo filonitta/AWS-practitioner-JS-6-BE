@@ -1,0 +1,35 @@
+service: authorization-service
+
+frameworkVersion: "3"
+
+plugins:
+  - serverless-webpack
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: dev
+  region: us-east-2
+  httpApi:
+    cors: true
+
+functions:
+  basicAuthorizer:
+    handler: handler.basicAuthorizer
+
+  generateToken:
+    handler: handler.generateToken
+    events:
+      - http:
+          path: /token
+          method: get
+
+resources:
+  Outputs:
+    BasicAuthorizerArn:
+      Description: "The Amazon Resource Name (ARN) of the basicAuthorizer function."
+      Value:
+         Fn::GetAtt: [BasicAuthorizerLambdaFunction, Arn]
+      Export:
+         Name: BasicAuthorizerArn
