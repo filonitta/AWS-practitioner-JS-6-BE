@@ -21,8 +21,6 @@ provider:
     REGION: ${self:provider.region}
     SQS_URL:
       'Fn::ImportValue': 'product-service-${self:provider.stage}-CatalogItemsQueueUrl'
-  httpApi:
-    cors: true
   iamRoleStatements:
     - Effect: 'Allow'
       Action:
@@ -46,9 +44,16 @@ functions:
       This function requires a query string parameter "name" specifying the filename.
       Example usage: /import?name=myFile.csv
     events:
-      - httpApi:
+      - http:
           path: /import
           method: get
+          cors: true
+          authorizer:
+            name: basicAuthorizer
+            type: 'token'
+            arn: arn:aws:lambda:us-east-2:449436809015:function:authorization-service-dev-basicAuthorizer
+            resultTtlInSeconds: 0
+            identitySource: 'method.request.header.Authorization'
   importFileParser:
     handler: handler.importFileParser
     events:
