@@ -18,9 +18,3 @@ functions:
   basicAuthorizer:
     handler: handler.basicAuthorizer
 
-  generateToken:
-    handler: handler.generateToken
-    events:
-      - http:
-          path: /token
-          method: get
