@@ -24,12 +24,3 @@ functions:
       - http:
           path: /token
           method: get
-
-resources:
-  Outputs:
-    BasicAuthorizerArn:
-      Description: "The Amazon Resource Name (ARN) of the basicAuthorizer function."
-      Value:
-         Fn::GetAtt: [BasicAuthorizerLambdaFunction, Arn]
-      Export:
-         Name: BasicAuthorizerArn
