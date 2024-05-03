@@ -51,7 +51,7 @@ functions:
           authorizer:
             name: basicAuthorizer
             type: 'token'
-            arn: arn:aws:lambda:us-east-2:449436809015:function:authorization-service-dev-basicAuthorizer
+            arn: arn:aws:lambda:${self:provider.region}:${self:custom.accountId}:function:authorization-service-dev-basicAuthorizer
             resultTtlInSeconds: 0
             identitySource: 'method.request.header.Authorization'
   importFileParser:
